@@ -19,7 +19,7 @@ stages:
   - job: CreateVM
     displayName: "Create Windows Virtual Machine"
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: 'windows-latest'
 
     steps:
     - task: AzureCLI@2
