@@ -68,11 +68,11 @@ stages:
             --resource-group $(resourceGroupName) \
             --name $(vmName) \
             --command-id RunPowerShellScript \
-            --scripts #"Write-Host 'Starting software installation...'; `
+            --scripts "#Write-Host 'Starting software installation...'; `
                        choco install nodejs -y; `
                        choco install git -y; `
                        choco install vscode -y; `
-                       #choco install openjdk ; `
+                       #choco install openjdk -y; `
                        #Write-Host 'Software installation complete.'; `
                        [System.Environment]::GetEnvironmentVariables()"
 
