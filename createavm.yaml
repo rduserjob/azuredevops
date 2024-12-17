@@ -61,7 +61,7 @@ stages:
       displayName: "Change Admin Password"
       inputs:
         azureSubscription: 'Arroyo_Challenge-Test_Osmar'
-        scriptType: 'bash'
+        scriptType: 'powershell'  # Cambiar a PowerShell
         scriptLocation: 'inlineScript'
         inlineScript: |
           # Cambiar la contraseña del usuario administrador en la VM usando PowerShell
@@ -87,7 +87,7 @@ stages:
       displayName: "Run Software Installation Script"
       inputs:
         azureSubscription: 'Arroyo_Challenge-Test_Osmar'
-        scriptType: 'bash'
+        scriptType: 'powershell'  # Cambiar a PowerShell
         scriptLocation: 'inlineScript'
         inlineScript: |
           # Ejecutar un script en la VM usando az vm run-command invoke
@@ -102,3 +102,4 @@ stages:
                        choco install openjdk --version=11 -y; `
                        Write-Host 'Software installation complete.'; `
                        [System.Environment]::GetEnvironmentVariables()"
+
