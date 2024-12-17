@@ -63,12 +63,7 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          # Crear credenciales
-          $vmUser = "$(adminUsername)"
-          $vmPassword = "$(adminPassword)"
-          $securePassword = ConvertTo-SecureString $vmPassword -AsPlainText -Force
-          $credential = New-Object System.Management.Automation.PSCredential ($vmUser, $securePassword)
-
+        
           # Ejecutar un script en la VM usando az vm run-command 
           az vm run-command invoke \
             --resource-group $(resourceGroupName) \
