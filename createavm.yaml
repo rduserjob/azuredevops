@@ -60,7 +60,7 @@ stages:
           az vm disk attach \
             --resource-group $(resourceGroupName) \
             --vm-name $(vmName) \
-            --name $(dataDiskName) \
+            --name test-osmar-premiun \
             --sku Premium_LRS \
             --new \
             --size-gb 128
