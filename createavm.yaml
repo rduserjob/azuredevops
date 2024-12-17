@@ -47,41 +47,31 @@ stages:
             --admin-password $(adminPassword) \
             --os-disk-name $(systemDiskName)
 
+- stage: Install_Software
+  displayName: "Install Software on VM"
+  jobs:
+  - job: SoftwareInstall
+    displayName: "Run Software Installation Script on VM"
+    pool:
+      vmImage: 'windows-latest'
+      
+    steps:
     - task: AzureCLI@2
-      displayName: "Install Az Module and Run Software Installation Script"
+      displayName: "Run Software Installation Script"
       inputs:
-        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
-        scriptType: 'ps'  
+        azureSubscription: 'my-service-connection'
+        scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          # Instalar el módulo Az si no está disponible
-          #if (-not (Get-Module -ListAvailable -Name Az)) {
-              #Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
-          #}
-
-          # Importar el módulo Az
-          #Import-Module Az -Force
-          #Write-Host "Az Module imported successfully."
-
-          # Autenticarse usando el token de Azure CLI
-          #$token = az account get-access-token --query "accessToken" -o tsv
-          #Connect-AzAccount -AccessToken $token -Tenant (az account show --query 'tenantId' -o tsv) `                        -SubscriptionId (az account show --query 'id' -o tsv)
-
-          # Crear credenciales
-          $vmUser = "$(adminUsername)"
-          $vmPassword = "$(adminPassword)"
-          $securePassword = ConvertTo-SecureString $vmPassword -AsPlainText -Force
-          $credential = New-Object System.Management.Automation.PSCredential ($vmUser, $securePassword)
-
           # Ejecutar un script en la VM usando az vm run-command invoke
           az vm run-command invoke \
-          --resource-group $(resourceGroupName) \
-          --name $(vmName) \
-          --command-id RunPowerShellScript \
-          --scripts "Write-Host 'Starting software installation...'; `
-          choco install nodejs -y; `
-          choco install git -y; `
-          choco install vscode -y; `
-          choco install openjdk --version=11 -y; `
-          Write-Host 'Software installation complete.'; `
-          [System.Environment]::GetEnvironmentVariables()"
+            --resource-group $(resourceGroupName) \
+            --name $(vmName) \
+            --command-id RunPowerShellScript \
+            --scripts "Write-Host 'Starting software installation...'; `
+                       choco install nodejs -y; `
+                       choco install git -y; `
+                       choco install vscode -y; `
+                       choco install openjdk --version=11 -y; `
+                       Write-Host 'Software installation complete.'; `
+                       [System.Environment]::GetEnvironmentVariables()"
