@@ -105,10 +105,10 @@ stages:
         inlineScript: |
           az vm show --resource-group $(resourceGroupName) --name $(vmName) --show-details --output table
 
-      displayName: "Output VM Information"
-      inputs:
-        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          az vm show --resource-group $(resourceGroupName) --name $(vmName) --show-details --output table
+      #displayName: "Output VM Information"
+      #inputs:
+        #azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        #scriptType: 'bash'
+        #scriptLocation: 'inlineScript'
+        #inlineScript: |
+          #az vm show --resource-group $(resourceGroupName) --name $(vmName) --show-details --output table
