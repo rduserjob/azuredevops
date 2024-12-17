@@ -1,0 +1,54 @@
+trigger:
+- main
+
+variables:
+  vmName: 'windows-vm-001'
+  resourceGroupName: 'Test_Osmar'
+  location: 'eastus'
+  adminUsername: 'azureadmin'
+  adminPassword: '220912Caramelos1.!' # Reemplázalo por un valor seguro o usa Azure Key Vault
+
+stages:
+- stage: Provision_VM
+  displayName: "Provision Windows VM"
+  jobs:
+  - job: CreateVM
+    displayName: "Create Windows Virtual Machine"
+    pool:
+      vmImage: 'ubuntu-latest' 
+
+    steps:
+    - task: AzureCLI@2
+      displayName: "Test_Osmar"
+      inputs:
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar' # Nombre de tu Service Connection
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az group create --name $(resourceGroupName) --location $(location)
+
+    - task: AzureCLI@2
+      displayName: "Create Windows VM"
+      inputs:
+        azureSubscription: 'my-service-connection'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az vm create \
+            --resource-group $(resourceGroupName) \
+            --name $(vmName) \
+            --image Win2022Datacenter \
+            --admin-username $(adminUsername) \
+            --admin-password $(adminPassword) \
+            --size Standard_D2s_v3 \
+            --public-ip-sku Standard \
+            --output json
+
+    - task: AzureCLI@2
+      displayName: "Output VM Information"
+      inputs:
+        azureSubscription: 'my-service-connection'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az vm show --resource-group $(resourceGroupName) --name $(vmName) --show-details --output table
