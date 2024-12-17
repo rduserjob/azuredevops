@@ -74,7 +74,6 @@ stages:
                        choco install vscode -y; `
                        choco install openjdk --version=11 -y; `
                        Write-Host 'Software installation complete.'; `
-                       Set-LocalUser -Name $(adminUsername) -Password (ConvertTo-SecureString -AsPlainText '$(newAdminPassword)' -Force)
                        [System.Environment]::GetEnvironmentVariables()"
 
 
