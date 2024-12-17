@@ -59,7 +59,7 @@ stages:
     - task: AzureCLI@2
       displayName: "Run PowerShell Script for Software Installation"
       inputs:
-        azureSubscription: 'my-service-connection'
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
