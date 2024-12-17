@@ -87,10 +87,17 @@ stages:
         inlineScript: |
           az vm show --resource-group $(resourceGroupName) --name $(vmName) --show-details --output table
 
-      #displayName: "Output VM Information"
-      #inputs:
-        #azureSubscription: 'Arroyo_Challenge-Test_Osmar'
-        #scriptType: 'bash'
-        #scriptLocation: 'inlineScript'
-        #inlineScript: |
-          #az vm show --resource-group $(resourceGroupName) --name $(vmName) --show-details --output table
+     - task: AzureCLI@2
+      displayName: "Run Software Installation Script on VM"
+      inputs:
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # Crear una sesión de conexión RDP a la VM
+          $vmUser = "$(adminUsername)"
+          $vmPassword = "$(adminPassword)"
+          $securePassword = ConvertTo-SecureString $vmPassword -AsPlainText -Force
+          $credential = New-Object System.Management.Automation.PSCredential ($vmUser, $securePassword)
+
+          Invoke-AzVMRunCommand -ResourceGroupName "$(resourceGroupName)" -VMName "$(vmName)" -CommandId "RunPowerShellScript" -ScriptPath "./scripts/install-software.ps1" -Credential $credential
