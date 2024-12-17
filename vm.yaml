@@ -98,9 +98,9 @@ stages:
             --resource-group $(resourceGroupName) \
             --name $(vmName) \
             --command-id RunPowerShellScript \
-            --scripts "Write-Host 'Rotating admin password...'; `
+            --scripts #"Write-Host 'Rotating admin password...'; `
                        Set-LocalUser -Name $(adminUsername) -Password (ConvertTo-SecureString -AsPlainText '$(newAdminPassword)' -Force); `
-                       Write-Host 'Admin password has been successfully rotated.'"
+                       #Write-Host 'Admin password has been successfully rotated.'"
           
           # Confirmar que el cambio de contraseña fue exitoso
           Write-Host "Admin password rotation complete."
