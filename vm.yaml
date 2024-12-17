@@ -6,8 +6,7 @@ variables:
   resourceGroupName: 'Test_Osmar'
   location: 'eastus'
   adminUsername: 'azureadmin'
-  adminPassword: '220912Caramelos1.'  # Contraseña actual
-  newAdminPassword: 'NewStrongPassword123!'  # Nueva contraseña
+  adminPassword: '220912Caramelos1.'
   vmSize: 'Standard_D2s_v3'
   systemDiskName: 'Test-Osmar-Disk'
   dataDiskName: 'Test-Osmar-dataDisk'
