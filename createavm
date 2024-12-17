@@ -2,11 +2,15 @@ trigger:
 - main
 
 variables:
-  vmName: 'windows-vm-001'
+  vmName: 'osmar-vm'
   resourceGroupName: 'Test_Osmar'
   location: 'eastus'
   adminUsername: 'azureadmin'
-  adminPassword: '220912Caramelos1.!' # Reemplázalo por un valor seguro o usa Azure Key Vault
+  adminPassword: 'Caramelos1.' 
+  vmSize: 'Standard_D2s_v3'
+  systemDiskName: 'systemDisk'
+  dataDiskName: 'dataDisk'
+  lockName: 'vm-delete-lock'
 
 stages:
 - stage: Provision_VM
@@ -15,22 +19,22 @@ stages:
   - job: CreateVM
     displayName: "Create Windows Virtual Machine"
     pool:
-      vmImage: 'ubuntu-latest' 
+      vmImage: 'ubuntu-latest'
 
     steps:
     - task: AzureCLI@2
-      displayName: "Test_Osmar"
+      displayName: "Create Resource Group"
       inputs:
-        azureSubscription: 'Arroyo_Challenge-Test_Osmar' # Nombre de tu Service Connection
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
           az group create --name $(resourceGroupName) --location $(location)
 
     - task: AzureCLI@2
-      displayName: "Create Windows VM"
+      displayName: "Create Windows VM with System Disk"
       inputs:
-        azureSubscription: 'my-service-connection'
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
@@ -38,16 +42,72 @@ stages:
             --resource-group $(resourceGroupName) \
             --name $(vmName) \
             --image Win2022Datacenter \
+            --size $(vmSize) \
             --admin-username $(adminUsername) \
             --admin-password $(adminPassword) \
-            --size Standard_D2s_v3 \
+            --os-disk-name $(systemDiskName) \
+            --os-disk-sku StandardSSD_LRS \
             --public-ip-sku Standard \
-            --output json
+            --nsg-rule NONE
+
+    - task: AzureCLI@2
+      displayName: "Add Premium Data Disk"
+      inputs:
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az vm disk attach \
+            --resource-group $(resourceGroupName) \
+            --vm-name $(vmName) \
+            --name $(dataDiskName) \
+            --sku Premium_LRS \
+            --new \
+            --size-gb 128
+
+    - task: AzureCLI@2
+      displayName: "Configure Network Security Group Rules"
+      inputs:
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # Habilitar puerto 80 para HTTP
+          az vm open-port --resource-group $(resourceGroupName) --name $(vmName) --port 80 --priority 1001
+          # Habilitar puerto 443 para HTTPS
+          az vm open-port --resource-group $(resourceGroupName) --name $(vmName) --port 443 --priority 1002
+          # Habilitar puerto 3389 para RDP
+          az vm open-port --resource-group $(resourceGroupName) --name $(vmName) --port 3389 --priority 1003
+          # Habilitar puerto 1433 para SQL Server
+          az vm open-port --resource-group $(resourceGroupName) --name $(vmName) --port 1433 --priority 1004
+
+    - task: AzureCLI@2
+      displayName: "Add Delete Lock to VM"
+      inputs:
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az lock create \
+            --name $(lockName) \
+            --resource-group $(resourceGroupName) \
+            --resource $(vmName) \
+            --resource-type "Microsoft.Compute/virtualMachines" \
+            --lock-type CanNotDelete \
+            --notes "Lock to prevent accidental deletion"
 
     - task: AzureCLI@2
       displayName: "Output VM Information"
       inputs:
-        azureSubscription: 'my-service-connection'
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az vm show --resource-group $(resourceGroupName) --name $(vmName) --show-details --output table
+
+      displayName: "Output VM Information"
+      inputs:
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
