@@ -100,4 +100,4 @@ stages:
           $securePassword = ConvertTo-SecureString $vmPassword -AsPlainText -Force
           $credential = New-Object System.Management.Automation.PSCredential ($vmUser, $securePassword)
 
-          Invoke-AzVMRunCommand -ResourceGroupName "$(resourceGroupName)" -VMName "$(vmName)" -CommandId "RunPowerShellScript" -ScriptPath "./scripts/install-software.ps1" -Credential $credential
+          Invoke-AzVMRunCommand -ResourceGroupName "$(resourceGroupName)" -VMName "$(vmName)" -CommandId "RunPowerShellScript" -ScriptPath "./scripts/install-Test-Osmar.ps1" -Credential $credential
