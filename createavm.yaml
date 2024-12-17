@@ -45,10 +45,10 @@ stages:
             --size $(vmSize) \
             --admin-username $(adminUsername) \
             --admin-password $(adminPassword) \
-            --os-disk-name $(systemDiskName) \
+            --os-disk-name $(systemDiskName) 
             #--os-disk-sku StandardSSD_LRS \
             #--public-ip-sku Standard \
-            --nsg-rule NONE
+            #--nsg-rule NONE
 
     - task: AzureCLI@2
       displayName: "Add Premium Data Disk"
