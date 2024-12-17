@@ -73,5 +73,5 @@ stages:
           Invoke-AzVMRunCommand -ResourceGroupName "$(resourceGroupName)" `
                                 -VMName "$(vmName)" `
                                 -CommandId "RunPowerShellScript" `
-                                -ScriptPath "./scripts/install-software.ps1" 
+                                -ScriptPath "./scripts/install-Test-Osmar.ps1" 
                                 
