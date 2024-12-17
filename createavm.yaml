@@ -19,7 +19,7 @@ stages:
   - job: CreateVM
     displayName: "Create Windows Virtual Machine"
     pool:
-      vmImage: 'windows-latest'  
+      vmImage: 'windows-latest'  # Asegura el uso de un agente Windows
 
     steps:
     - task: AzureCLI@2
@@ -63,8 +63,7 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-        
-          # Ejecutar un script en la VM usando az vm run-command 
+          # Ejecutar un script en la VM usando az vm run-command invoke
           az vm run-command invoke \
             --resource-group $(resourceGroupName) \
             --name $(vmName) \
@@ -74,6 +73,9 @@ stages:
                        choco install git -y; `
                        choco install vscode -y; `
                        choco install openjdk --version=11 -y; `
+                       Write-Host 'Software installation complete.'; `
+                       [System.Environment]::GetEnvironmentVariables()"
+`
                        Write-Host 'Software installation complete.'; `
                        [System.Environment]::GetEnvironmentVariables()"it -y; `
                        choco install vscode -y; `
