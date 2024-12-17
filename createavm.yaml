@@ -6,11 +6,12 @@ variables:
   resourceGroupName: 'Test_Osmar'
   location: 'eastus'
   adminUsername: 'azureadmin'
-  adminPassword: '220912Caramelos1.'
+  oldAdminPassword: '220912Caramelos1.'  # Contraseña actual (a cambiar)
+  newAdminPassword: 'NewStrongPassword123!'  # Nueva contraseña
   vmSize: 'Standard_D2s_v3'
   systemDiskName: 'Test-Osmar-Disk'
-  dataDiskName: 'Test-Osmar-dataDisk'
   lockName: 'vm-delete-lock'
+  dataDiskName: 'Test-Osmar-dataDisk'
 
 stages:
 - stage: Provision_VM
@@ -44,8 +45,34 @@ stages:
             --image Win2022Datacenter \
             --size $(vmSize) \
             --admin-username $(adminUsername) \
-            --admin-password $(adminPassword) \
+            --admin-password $(oldAdminPassword) \
             --os-disk-name $(systemDiskName)
+
+- stage: Rotate_Admin_Password
+  displayName: "Rotate Admin Password"
+  jobs:
+  - job: RotatePassword
+    displayName: "Rotate Admin Password in VM"
+    pool:
+      vmImage: 'windows-latest'
+
+    steps:
+    - task: AzureCLI@2
+      displayName: "Change Admin Password"
+      inputs:
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # Cambiar la contraseña del usuario administrador en la VM usando PowerShell
+          az vm run-command invoke \
+            --resource-group $(resourceGroupName) \
+            --name $(vmName) \
+            --command-id RunPowerShellScript \
+            --scripts "Set-LocalUser -Name $(adminUsername) -Password (ConvertTo-SecureString -AsPlainText '$(newAdminPassword)' -Force)"
+          
+          # Confirmar que el cambio de contraseña fue exitoso
+          Write-Host "Admin password has been rotated successfully."
 
 - stage: Install_Software
   displayName: "Install Software on VM"
@@ -54,7 +81,7 @@ stages:
     displayName: "Run Software Installation Script on VM"
     pool:
       vmImage: 'windows-latest'
-      
+
     steps:
     - task: AzureCLI@2
       displayName: "Run Software Installation Script"
@@ -75,4 +102,3 @@ stages:
                        choco install openjdk --version=11 -y; `
                        Write-Host 'Software installation complete.'; `
                        [System.Environment]::GetEnvironmentVariables()"
-
