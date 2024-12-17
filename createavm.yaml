@@ -63,6 +63,10 @@ stages:
           Import-Module Az -Force
           Write-Host "Az Module imported successfully."
 
+          # Autenticarse usando el token de Azure CLI
+          $token = az account get-access-token --query "accessToken" -o tsv
+          Connect-AzAccount -AccessToken $token -Tenant (az account show --query 'tenantId' -o tsv) `                        -SubscriptionId (az account show --query 'id' -o tsv)
+
           # Crear credenciales
           $vmUser = "$(adminUsername)"
           $vmPassword = "$(adminPassword)"
