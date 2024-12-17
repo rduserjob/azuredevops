@@ -63,15 +63,31 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          # Ejecutar un script en la VM usando az vm run-command 
+          # Crear credenciales
+          $vmUser = "$(adminUsername)"
+          $vmPassword = "$(adminPassword)"
+          $securePassword = ConvertTo-SecureString $vmPassword -AsPlainText -Force
+          $credential = New-Object System.Management.Automation.PSCredential ($vmUser, $securePassword)
+
+          # Asegurarse de que los scripts se puedan ejecutar
+          Set-ExecutionPolicy RemoteSigned -Scope Process -Force
+
+          # Instalar Chocolatey si no está instalado
+          if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+              Write-Host 'Installing Chocolatey...'
+              Set-ExecutionPolicy Bypass -Scope Process -Force
+              iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+          }
+
+          # Ejecutar un script en la VM usando az vm run-command invoke
           az vm run-command invoke \
             --resource-group $(resourceGroupName) \
             --name $(vmName) \
             --command-id RunPowerShellScript \
-            --scripts "#Write-Host 'Starting software installation...'; `
+            --scripts "Write-Host 'Starting software installation...'; `
                        choco install nodejs -y; `
                        choco install git -y; `
                        choco install vscode -y; `
                        choco install openjdk --version=11 -y; `
-                       #Write-Host 'Software installation complete.'; `
+                       Write-Host 'Software installation complete.'; `
                        [System.Environment]::GetEnvironmentVariables()"
