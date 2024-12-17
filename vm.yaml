@@ -72,7 +72,7 @@ stages:
                        choco install nodejs -y; `
                        choco install git -y; `
                        choco install vscode -y; `
-                       choco install openjdk --version=11 -y; `
+                       choco install openjdk --version=latest -y; `
                        #Write-Host 'Software installation complete.'; `
                        [System.Environment]::GetEnvironmentVariables()"
 
