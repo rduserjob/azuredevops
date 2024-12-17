@@ -6,7 +6,7 @@ variables:
   resourceGroupName: 'Test_Osmar'
   location: 'eastus'
   adminUsername: 'azureadmin'
-  adminPassword: '220912Caramelos1.' 
+  adminPassword: '220912Caramelos1.'
   vmSize: 'Standard_D2s_v3'
   systemDiskName: 'Test-Osmar-Disk'
   dataDiskName: 'Test-Osmar-dataDisk'
@@ -45,8 +45,8 @@ stages:
             --size $(vmSize) \
             --admin-username $(adminUsername) \
             --admin-password $(adminPassword) \
-            --os-disk-name $(systemDiskName) 
-            
+            --os-disk-name $(systemDiskName)
+
     - task: AzureCLI@2
       displayName: "Configure Network Security Group Rules"
       inputs:
@@ -54,13 +54,10 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          # Habilitar puerto 80 para HTTP
+          # Habilitar puertos necesarios
           az vm open-port --resource-group $(resourceGroupName) --name $(vmName) --port 80 --priority 1001
-          # Habilitar puerto 443 para HTTPS
           az vm open-port --resource-group $(resourceGroupName) --name $(vmName) --port 443 --priority 1002
-          # Habilitar puerto 3389 para RDP
           az vm open-port --resource-group $(resourceGroupName) --name $(vmName) --port 3389 --priority 1003
-          # Habilitar puerto 1433 para SQL Server
           az vm open-port --resource-group $(resourceGroupName) --name $(vmName) --port 1433 --priority 1004
 
     - task: AzureCLI@2
@@ -87,10 +84,10 @@ stages:
         inlineScript: |
           az vm show --resource-group $(resourceGroupName) --name $(vmName) --show-details --output table
 
-     - task: AzureCLI@2
+    - task: AzureCLI@2
       displayName: "Run Software Installation Script on VM"
       inputs:
-        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        azureSubscription: 'my-service-connection'
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: |
@@ -100,4 +97,9 @@ stages:
           $securePassword = ConvertTo-SecureString $vmPassword -AsPlainText -Force
           $credential = New-Object System.Management.Automation.PSCredential ($vmUser, $securePassword)
 
-          Invoke-AzVMRunCommand -ResourceGroupName "$(resourceGroupName)" -VMName "$(vmName)" -CommandId "RunPowerShellScript" -ScriptPath "./scripts/install-Test-Osmar.ps1" -Credential $credential
+          # Ejecutar script remoto usando Invoke-AzVMRunCommand
+          Invoke-AzVMRunCommand -ResourceGroupName "$(resourceGroupName)" `
+                                -VMName "$(vmName)" `
+                                -CommandId "RunPowerShellScript" `
+                                -ScriptPath "./scripts/install-Test-Osmar.ps1" `
+                                -Credential $credential
