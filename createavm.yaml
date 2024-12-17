@@ -54,21 +54,15 @@ stages:
     displayName: "Run Software Installation Script on VM"
     pool:
       vmImage: 'windows-latest'
-      
+
     steps:
     - task: AzureCLI@2
-      displayName: "Run Software Installation Script"
+      displayName: "Run PowerShell Script for Software Installation"
       inputs:
-        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        azureSubscription: 'my-service-connection'
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          # Crear credenciales
-          $vmUser = "$(adminUsername)"
-          $vmPassword = "$(adminPassword)"
-          $securePassword = ConvertTo-SecureString $vmPassword -AsPlainText -Force
-          $credential = New-Object System.Management.Automation.PSCredential ($vmUser, $securePassword)
-
           # Asegurarse de que los scripts se puedan ejecutar
           Set-ExecutionPolicy RemoteSigned -Scope Process -Force
 
@@ -79,7 +73,7 @@ stages:
               iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
           }
 
-          # Ejecutar un script en la VM usando az vm run-command invoke
+          # Ejecutar un script en la VM usando az vm run-command invoke (ahora usando PowerShell)
           az vm run-command invoke \
             --resource-group $(resourceGroupName) \
             --name $(vmName) \
@@ -87,6 +81,11 @@ stages:
             --scripts "Write-Host 'Starting software installation...'; `
                        choco install nodejs -y; `
                        choco install git -y; `
+                       choco install vscode -y; `
+                       choco install openjdk --version=11 -y; `
+                       Write-Host 'Software installation complete.'; `
+                       [System.Environment]::GetEnvironmentVariables()"
+
                        choco install vscode -y; `
                        choco install openjdk --version=11 -y; `
                        Write-Host 'Software installation complete.'; `
