@@ -73,9 +73,15 @@ stages:
           $securePassword = ConvertTo-SecureString $vmPassword -AsPlainText -Force
           $credential = New-Object System.Management.Automation.PSCredential ($vmUser, $securePassword)
 
-          # Ejecutar script remoto usando Invoke-AzVMRunCommand
-          Invoke-AzVMRunCommand -ResourceGroupName "$(resourceGroupName)" `
-                                -VMName "$(vmName)" `
-                                -CommandId "RunPowerShellScript" `
-                                -ScriptPath "./scripts/install-Test-Osmar.ps1" 
-                                
+          # Ejecutar un script en la VM usando az vm run-command invoke
+          az vm run-command invoke \
+          --resource-group $(resourceGroupName) \
+          --name $(vmName) \
+          --command-id RunPowerShellScript \
+          --scripts "Write-Host 'Starting software installation...'; `
+                   choco install nodejs -y; `
+                   choco install git -y; `
+                   choco install vscode -y; `
+                   choco install openjdk --version=11 -y; `
+                   Write-Host 'Software installation complete.'; `
+                   [System.Environment]::GetEnvironmentVariables()"
