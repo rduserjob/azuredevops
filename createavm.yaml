@@ -50,20 +50,20 @@ stages:
             #--public-ip-sku Standard \
             #--nsg-rule NONE
 
-    - task: AzureCLI@2
-      displayName: "Add Premium Data Disk"
-      inputs:
-        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          az vm disk attach \
-            --resource-group $(resourceGroupName) \
-            --vm-name $(vmName) \
-            --name test-osmar-premiun \
-            --sku Premium_LRS \
-            --new \
-            --size-gb 128
+    #- task: AzureCLI@2
+      #displayName: "Add Premium Data Disk"
+      #inputs:
+        #azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        #scriptType: 'bash'
+        #scriptLocation: 'inlineScript'
+        #inlineScript: |
+          #az vm disk attach \
+            #--resource-group $(resourceGroupName) \
+            #--vm-name $(vmName) \
+            #--name test-osmar-premiun \
+            #--sku Premium_LRS \
+            #--new \
+            #--size-gb 128
 
     - task: AzureCLI@2
       displayName: "Configure Network Security Group Rules"
