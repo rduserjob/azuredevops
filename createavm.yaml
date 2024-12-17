@@ -102,4 +102,3 @@ stages:
                        choco install openjdk --version=11 -y; `
                        Write-Host 'Software installation complete.'; `
                        [System.Environment]::GetEnvironmentVariables()"
-
