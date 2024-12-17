@@ -1,4 +1,5 @@
 trigger:
+trigger:
 - main
 
 variables:
@@ -6,10 +7,11 @@ variables:
   resourceGroupName: 'Test_Osmar'
   location: 'eastus'
   adminUsername: 'azureadmin'
-  oldAdminPassword: '220912Caramelos1.'  # Contraseña actual (a cambiar)
+  adminPassword: '220912Caramelos1.'  # Contraseña actual
   newAdminPassword: 'NewStrongPassword123!'  # Nueva contraseña
   vmSize: 'Standard_D2s_v3'
   systemDiskName: 'Test-Osmar-Disk'
+  dataDiskName: 'Test-Osmar-dataDisk'
   lockName: 'vm-delete-lock'
 
 stages:
@@ -19,7 +21,7 @@ stages:
   - job: CreateVM
     displayName: "Create Windows Virtual Machine"
     pool:
-      vmImage: 'windows-latest'
+      vmImage: 'windows-latest'  # Asegura el uso de un agente Windows
 
     steps:
     - task: AzureCLI@2
@@ -44,14 +46,43 @@ stages:
             --image Win2022Datacenter \
             --size $(vmSize) \
             --admin-username $(adminUsername) \
-            --admin-password $(oldAdminPassword) \
+            --admin-password $(adminPassword) \
             --os-disk-name $(systemDiskName)
+
+- stage: Install_Software
+  displayName: "Install Software on VM"
+  jobs:
+  - job: SoftwareInstall
+    displayName: "Run Software Installation Script on VM"
+    pool:
+      vmImage: 'windows-latest'
+      
+    steps:
+    - task: AzureCLI@2
+      displayName: "Run Software Installation Script"
+      inputs:
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # Ejecutar un script en la VM usando az vm run-command invoke
+          az vm run-command invoke \
+            --resource-group $(resourceGroupName) \
+            --name $(vmName) \
+            --command-id RunPowerShellScript \
+            --scripts "Write-Host 'Starting software installation...'; `
+                       choco install nodejs -y; `
+                       choco install git -y; `
+                       choco install vscode -y; `
+                       choco install openjdk --version=11 -y; `
+                       Write-Host 'Software installation complete.'; `
+                       [System.Environment]::GetEnvironmentVariables()"
 
 - stage: Rotate_Admin_Password
   displayName: "Rotate Admin Password"
   jobs:
   - job: RotatePassword
-    displayName: "Rotate Admin Password in VM"
+    displayName: "Change Admin Password in VM"
     pool:
       vmImage: 'windows-latest'
 
@@ -68,7 +99,10 @@ stages:
             --resource-group $(resourceGroupName) \
             --name $(vmName) \
             --command-id RunPowerShellScript \
-            --scripts "Set-LocalUser -Name $(adminUsername) -Password (ConvertTo-SecureString -AsPlainText '$(newAdminPassword)' -Force)"
+            --scripts "Write-Host 'Rotating admin password...'; `
+                       Set-LocalUser -Name $(adminUsername) -Password (ConvertTo-SecureString -AsPlainText '$(newAdminPassword)' -Force); `
+                       Write-Host 'Admin password has been successfully rotated.'"
           
           # Confirmar que el cambio de contraseña fue exitoso
-          Write-Host "Admin password has been rotated successfully."
+          Write-Host "Admin password rotation complete."
+
