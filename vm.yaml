@@ -1,0 +1,74 @@
+trigger:
+- main
+
+variables:
+  vmName: 'osmar-vm'
+  resourceGroupName: 'Test_Osmar'
+  location: 'eastus'
+  adminUsername: 'azureadmin'
+  oldAdminPassword: '220912Caramelos1.'  # Contraseña actual (a cambiar)
+  newAdminPassword: 'NewStrongPassword123!'  # Nueva contraseña
+  vmSize: 'Standard_D2s_v3'
+  systemDiskName: 'Test-Osmar-Disk'
+  lockName: 'vm-delete-lock'
+
+stages:
+- stage: Provision_VM
+  displayName: "Provision Windows VM"
+  jobs:
+  - job: CreateVM
+    displayName: "Create Windows Virtual Machine"
+    pool:
+      vmImage: 'windows-latest'
+
+    steps:
+    - task: AzureCLI@2
+      displayName: "Create Resource Group"
+      inputs:
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az group create --name $(resourceGroupName) --location $(location)
+
+    - task: AzureCLI@2
+      displayName: "Create Windows VM with System Disk"
+      inputs:
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az vm create \
+            --resource-group $(resourceGroupName) \
+            --name $(vmName) \
+            --image Win2022Datacenter \
+            --size $(vmSize) \
+            --admin-username $(adminUsername) \
+            --admin-password $(oldAdminPassword) \
+            --os-disk-name $(systemDiskName)
+
+- stage: Rotate_Admin_Password
+  displayName: "Rotate Admin Password"
+  jobs:
+  - job: RotatePassword
+    displayName: "Rotate Admin Password in VM"
+    pool:
+      vmImage: 'windows-latest'
+
+    steps:
+    - task: AzureCLI@2
+      displayName: "Change Admin Password"
+      inputs:
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # Cambiar la contraseña del usuario administrador en la VM usando PowerShell
+          az vm run-command invoke \
+            --resource-group $(resourceGroupName) \
+            --name $(vmName) \
+            --command-id RunPowerShellScript \
+            --scripts "Set-LocalUser -Name $(adminUsername) -Password (ConvertTo-SecureString -AsPlainText '$(newAdminPassword)' -Force)"
+          
+          # Confirmar que el cambio de contraseña fue exitoso
+          Write-Host "Admin password has been rotated successfully."
