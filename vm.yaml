@@ -90,7 +90,7 @@ stages:
       displayName: "Change Admin Password"
       inputs:
         azureSubscription: 'Arroyo_Challenge-Test_Osmar'
-        scriptType: 'PowerShell'
+        scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
           # Cambiar la contraseña del usuario administrador en la VM usando PowerShell
@@ -100,3 +100,4 @@ stages:
             --command-id RunPowerShellScript \
             --scripts |
               Set-LocalUser -Name $(adminUsername) -Password (ConvertTo-SecureString -AsPlainText '$(newAdminPassword)' -Force)
+
