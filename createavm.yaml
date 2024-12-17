@@ -55,17 +55,17 @@ stages:
         scriptLocation: 'inlineScript'
         inlineScript: |
           # Instalar el módulo Az si no está disponible
-          if (-not (Get-Module -ListAvailable -Name Az)) {
-              Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
-          }
+          #if (-not (Get-Module -ListAvailable -Name Az)) {
+              #Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
+          #}
 
           # Importar el módulo Az
-          Import-Module Az -Force
-          Write-Host "Az Module imported successfully."
+          #Import-Module Az -Force
+          #Write-Host "Az Module imported successfully."
 
           # Autenticarse usando el token de Azure CLI
-          $token = az account get-access-token --query "accessToken" -o tsv
-          Connect-AzAccount -AccessToken $token -Tenant (az account show --query 'tenantId' -o tsv) `                        -SubscriptionId (az account show --query 'id' -o tsv)
+          #$token = az account get-access-token --query "accessToken" -o tsv
+          #Connect-AzAccount -AccessToken $token -Tenant (az account show --query 'tenantId' -o tsv) `                        -SubscriptionId (az account show --query 'id' -o tsv)
 
           # Crear credenciales
           $vmUser = "$(adminUsername)"
