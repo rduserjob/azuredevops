@@ -6,7 +6,7 @@ variables:
   resourceGroupName: 'Test_Osmar'
   location: 'eastus'
   adminUsername: 'azureadmin'
-  adminPassword: 'Caramelos1.' 
+  adminPassword: '220912Caramelos1.' 
   vmSize: 'Standard_D2s_v3'
   systemDiskName: 'Test-Osmar-Disk'
   dataDiskName: 'Test-Osmar-dataDisk'
@@ -47,7 +47,7 @@ stages:
             --admin-password $(adminPassword) \
             --os-disk-name $(systemDiskName) \
             #--os-disk-sku StandardSSD_LRS \
-            --public-ip-sku Standard \
+            #--public-ip-sku Standard \
             --nsg-rule NONE
 
     - task: AzureCLI@2
