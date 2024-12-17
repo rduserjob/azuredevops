@@ -63,7 +63,7 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          # Ejecutar un script en la VM usando az vm run-command invoke
+          # Ejecutar un script en la VM usando az vm run-command 
           az vm run-command invoke \
             --resource-group $(resourceGroupName) \
             --name $(vmName) \
@@ -71,13 +71,6 @@ stages:
             --scripts "Write-Host 'Starting software installation...'; `
                        choco install nodejs -y; `
                        choco install git -y; `
-                       choco install vscode -y; `
-                       choco install openjdk --version=11 -y; `
-                       Write-Host 'Software installation complete.'; `
-                       [System.Environment]::GetEnvironmentVariables()"
-`
-                       Write-Host 'Software installation complete.'; `
-                       [System.Environment]::GetEnvironmentVariables()"it -y; `
                        choco install vscode -y; `
                        choco install openjdk --version=11 -y; `
                        Write-Host 'Software installation complete.'; `
