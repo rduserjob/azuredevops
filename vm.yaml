@@ -93,5 +93,9 @@ stages:
         scriptLocation: 'inlineScript'
         inlineScript: |
           # Cambiar la contraseña del usuario administrador en la VM usando PowerShell
-          az vm run-command invoke --resource-group $(resourceGroupName) --name $(vmName) --command-id RunPowerShellScript --scripts "Set-LocalUser -Name $(adminUsername) -Password (ConvertTo-SecureString -AsPlainText '$(newAdminPassword)' -Force)"
+          az vm run-command invoke \
+          --resource-group $(resourceGroupName) \
+          --name $(vmName) \ 
+          --command-id RunPowerShellScript \
+          --scripts "Set-LocalUser -Name $(adminUsername) -Password (ConvertTo-SecureString -AsPlainText '$(newAdminPassword)' -Force)"
 
