@@ -87,7 +87,7 @@ stages:
     - task: AzureCLI@2
       displayName: "Run Software Installation Script on VM"
       inputs:
-        azureSubscription: 'my-service-connection'
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
         scriptType: 'ps'
         scriptLocation: 'inlineScript'
         inlineScript: |
