@@ -69,8 +69,7 @@ stages:
           [System.Environment]::SetEnvironmentVariable("JAVA_HOME", $javaHome, [System.EnvironmentVariableTarget]::Machine)
           [System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";$javaHome\bin", [System.EnvironmentVariableTarget]::Machine)
 
-          # Reiniciar VM para aplicar configuraciones
-          #shutdown /r /t 0
+          
 
 - stage: Validate_Environment
   displayName: "Validate Environment Setup"
