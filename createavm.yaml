@@ -87,4 +87,4 @@ stages:
         echo "Variables de entorno del sistema:"
         Get-ChildItem Env: | Sort-Object Name
       displayName: "Imprimir Variables de Entorno"
-      shell: powershell
+      #shell: powershell
