@@ -11,6 +11,7 @@ variables:
   systemDiskName: 'Test-Osmar-Disk'
   dataDiskName: 'Test-Osmar-dataDisk'
   lockName: 'vm-delete-lock'
+  keyVaultName: 'my-keyvault'  # El nombre de tu Key Vault, si deseas guardar la contraseña allí.
 
 stages:
 - stage: Provision_VM
@@ -19,7 +20,7 @@ stages:
   - job: CreateVM
     displayName: "Create Windows Virtual Machine"
     pool:
-      vmImage: 'windows-latest'  # Asegura el uso de un agente Windows
+      vmImage: 'windows-latest'
 
     steps:
     - task: AzureCLI@2
@@ -47,33 +48,49 @@ stages:
             --admin-password $(adminPassword) \
             --os-disk-name $(systemDiskName)
 
-- stage: Install_Software
-  displayName: "Install Software on VM"
-  jobs:
-  - job: SoftwareInstall
-    displayName: "Run Software Installation Script on VM"
-    pool:
-      vmImage: 'windows-latest'
-      
-    steps:
     - task: AzureCLI@2
-      displayName: "Run Software Installation Script"
+      displayName: "Rotate Admin Password"
       inputs:
         azureSubscription: 'Arroyo_Challenge-Test_Osmar'
-        scriptType: 'bash'
+        scriptType: 'powershell'
         scriptLocation: 'inlineScript'
         inlineScript: |
-          # Ejecutar un script en la VM usando az vm run-command invoke
-          az vm run-command invoke \
-            --resource-group $(resourceGroupName) \
-            --name $(vmName) \
-            --command-id RunPowerShellScript \
-            --scripts "
-                       choco install nodejs -y; `
-                       choco install git -y; `
-                       choco install vscode -y; `
-                       choco install openjdk --version=11 -y; `
-                       
-                       [System.Environment]::GetEnvironmentVariables()"
+          # Generar una nueva contraseña aleatoria
+          $password = [System.Web.Security.Membership]::GeneratePassword(16, 4)
+          powershell.exe -Command "Write-Host "Nueva contraseña generada: $password""
 
+          # Cambiar la contraseña del administrador en la máquina virtual
+          $adminUsername = "$(adminUsername)"
+          $vmName = "$(vmName)"
+          $resourceGroupName = "$(resourceGroupName)"
+          
+          # Conectar a la VM y cambiar la contraseña
+          $vm = az vm show --resource-group $resourceGroupName --name $vmName --query "id" -o tsv
+          if (-not $vm) {
+            Write-Error "La máquina virtual no se encuentra."
+            exit 1
+          }
+          
+          az vm user update \
+            --resource-group $resourceGroupName \
+            --vm-name $vmName \
+            --username $adminUsername \
+            --password $password
+          
+          Write-Host "Contraseña de administrador actualizada exitosamente."
 
+          # Almacenar la nueva contraseña en Azure Key Vault (opcional)
+          az keyvault secret set --vault-name $(keyVaultName) --name "AdminPassword" --value $password
+          
+    
+
+    - task: AzureCLI@2
+      displayName: "Validate Environment Setup"
+      inputs:
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        scriptType: 'powershell'
+        scriptLocation: 'inlineScript'
+        inlineScript: | 
+          echo "Variables de entorno del sistema:"
+          powershell.exe -Command "Get-ChildItem Env: | Sort-Object Name"
+        shell: powershell
