@@ -64,23 +64,16 @@ stages:
           choco install vscode --yes
           choco install git --yes
 
-          
+    - task: AzureCLI@2
+      displayName: "Validate Environment Setup"
+      inputs:
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        scriptType: 'powershell'
+        scriptLocation: 'inlineScript'
+        inlineScript: | 
+          echo "Variables de entorno del sistema:"
+          Get-ChildItem Env: | Sort-Object Name
 
           
 
-- stage: Validate_Environment
-  displayName: "Validate Environment Setup"
-  dependsOn: Provision_VM
-  jobs:
-  - job: ValidateSetup
-    displayName: "Validate Installed Applications and Environment Variables"
-    pool:
-      vmImage: 'windows-latest'
 
-    steps:
-    - script: |
-        # Verificar variables de entorno y configuración
-        echo "Variables de entorno del sistema:"
-        Get-ChildItem Env: | Sort-Object Name
-      displayName: "Imprimir Variables de Entorno"
-      #shell: powershell
