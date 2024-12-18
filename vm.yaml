@@ -56,7 +56,7 @@ stages:
       vmImage: 'windows-latest'
       
     steps:
-    - task: AzureCLI@2
+    - task: PowerShell@2
       displayName: "Run Software Installation Script"
       inputs:
         azureSubscription: 'Arroyo_Challenge-Test_Osmar'
