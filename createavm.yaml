@@ -73,7 +73,7 @@ stages:
         inlineScript: | 
           echo "Variables de entorno del sistema:"
           Get-ChildItem Env: | Sort-Object Name
-
+        shell: powershell
           
 
 
