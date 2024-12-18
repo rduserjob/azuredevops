@@ -64,10 +64,7 @@ stages:
           choco install vscode --yes
           choco install git --yes
 
-          # Configurar variables de entorno para Java
-          $javaHome = (Get-Item "C:\Program Files\Java\jdk*").FullName
-          [System.Environment]::SetEnvironmentVariable("JAVA_HOME", $javaHome, [System.EnvironmentVariableTarget]::Machine)
-          [System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";$javaHome\bin", [System.EnvironmentVariableTarget]::Machine)
+          
 
           
 
