@@ -6,12 +6,11 @@ variables:
   resourceGroupName: 'Test_Osmar'
   location: 'eastus'
   adminUsername: 'azureadmin'
-  oldAdminPassword: '220912Caramelos1.'  # Contraseña actual (a cambiar)
-  newAdminPassword: 'NewStrongPassword123!'  # Nueva contraseña
+  adminPassword: '220912Caramelos1.'
   vmSize: 'Standard_D2s_v3'
   systemDiskName: 'Test-Osmar-Disk'
-  lockName: 'vm-delete-lock'
   dataDiskName: 'Test-Osmar-dataDisk'
+  lockName: 'vm-delete-lock'
 
 stages:
 - stage: Provision_VM
@@ -20,7 +19,7 @@ stages:
   - job: CreateVM
     displayName: "Create Windows Virtual Machine"
     pool:
-      vmImage: 'windows-latest'  # Asegura el uso de un agente Windows
+      vmImage: 'windows-latest'
 
     steps:
     - task: AzureCLI@2
@@ -45,60 +44,47 @@ stages:
             --image Win2022Datacenter \
             --size $(vmSize) \
             --admin-username $(adminUsername) \
-            --admin-password $(oldAdminPassword) \
+            --admin-password $(adminPassword) \
             --os-disk-name $(systemDiskName)
 
-- stage: Rotate_Admin_Password
-  displayName: "Rotate Admin Password"
+    - task: AzureCLI@2
+      displayName: "Install Applications with Chocolatey"
+      inputs:
+        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
+        scriptType: 'powershell'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # Instalar Chocolatey
+          Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
+          # Instalar Office, Node.js, Java, Visual Studio Code y Git
+          choco install microsoft-office-deployment --yes
+          choco install nodejs --yes
+          choco install jdk8 --yes
+          choco install vscode --yes
+          choco install git --yes
+
+          # Configurar variables de entorno para Java
+          $javaHome = (Get-Item "C:\Program Files\Java\jdk*").FullName
+          [System.Environment]::SetEnvironmentVariable("JAVA_HOME", $javaHome, [System.EnvironmentVariableTarget]::Machine)
+          [System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";$javaHome\bin", [System.EnvironmentVariableTarget]::Machine)
+
+          # Reiniciar VM para aplicar configuraciones
+          shutdown /r /t 0
+
+- stage: Validate_Environment
+  displayName: "Validate Environment Setup"
+  dependsOn: Provision_VM
   jobs:
-  - job: RotatePassword
-    displayName: "Rotate Admin Password in VM"
+  - job: ValidateSetup
+    displayName: "Validate Installed Applications and Environment Variables"
     pool:
       vmImage: 'windows-latest'
 
     steps:
-    - task: AzureCLI@2
-      displayName: "Change Admin Password"
-      inputs:
-        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
-        scriptType: 'powershell'  # Cambiar a PowerShell
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          # Cambiar la contraseña del usuario administrador en la VM usando PowerShell
-          az vm run-command invoke \
-            --resource-group $(resourceGroupName) \
-            --name $(vmName) \
-            --command-id RunPowerShellScript \
-            --scripts "Set-LocalUser -Name $(adminUsername) -Password (ConvertTo-SecureString -AsPlainText '$(newAdminPassword)' -Force)"
-          
-          # Confirmar que el cambio de contraseña fue exitoso
-          Write-Host "Admin password has been rotated successfully."
-
-- stage: Install_Software
-  displayName: "Install Software on VM"
-  jobs:
-  - job: SoftwareInstall
-    displayName: "Run Software Installation Script on VM"
-    pool:
-      vmImage: 'windows-latest'
-
-    steps:
-    - task: AzureCLI@2
-      displayName: "Run Software Installation Script"
-      inputs:
-        azureSubscription: 'Arroyo_Challenge-Test_Osmar'
-        scriptType: 'powershell'  # Cambiar a PowerShell
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          # Ejecutar un script en la VM usando az vm run-command invoke
-          az vm run-command invoke \
-            --resource-group $(resourceGroupName) \
-            --name $(vmName) \
-            --command-id RunPowerShellScript \
-            --scripts "Write-Host 'Starting software installation...'; `
-                       choco install nodejs -y; `
-                       choco install git -y; `
-                       choco install vscode -y; `
-                       choco install openjdk --version=11 -y; `
-                       Write-Host 'Software installation complete.'; `
-                       [System.Environment]::GetEnvironmentVariables()"
+    - script: |
+        # Verificar variables de entorno y configuración
+        echo "Variables de entorno del sistema:"
+        Get-ChildItem Env: | Sort-Object Name
+      displayName: "Imprimir Variables de Entorno"
+      shell: powershell
